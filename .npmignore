@@ -1,0 +1,7 @@
+# From .gitignore (must duplicate here since .npmignore overrides .gitignore)
+node_modules/
+*.tgz
+.DS_Store
+
+# Claude Code settings
+.claude/

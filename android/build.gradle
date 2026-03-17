@@ -4,14 +4,14 @@ plugins {
 }
 
 group = 'expo.modules.flic2'
-version = '0.2.2'
+version = '0.2.3'
 
 android {
   namespace "expo.modules.flic2"
 
   defaultConfig {
     versionCode 1
-    versionName "0.2.2"
+    versionName "0.2.3"
     minSdkVersion 24
   }
 
@@ -31,5 +31,5 @@ repositories {
 }
 
 dependencies {
-  implementation 'com.github.50ButtonsEach:flic2lib-android:2.+'
+  implementation 'com.github.50ButtonsEach:flic2lib-android:2.0.1'
 }
