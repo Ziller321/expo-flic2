@@ -1,0 +1,45 @@
+{
+  "name": "expo-flic2",
+  "version": "0.1.0",
+  "description": "Expo module for Flic2 Bluetooth buttons",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "scripts": {
+    "build": "expo-module build",
+    "clean": "expo-module clean",
+    "lint": "expo-module lint",
+    "test": "expo-module test",
+    "prepare": "expo-module prepare",
+    "prepublishOnly": "expo-module prepublishOnly",
+    "expo-module": "expo-module",
+    "build:plugin": "tsc --build plugin"
+  },
+  "keywords": [
+    "expo",
+    "react-native",
+    "flic2",
+    "bluetooth",
+    "button"
+  ],
+  "license": "MIT",
+  "author": "Joonas Haaparanta",
+  "homepage": "https://github.com/Ziller321/expo-flic2",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ziller321/expo-flic2.git"
+  },
+  "peerDependencies": {
+    "expo": "*",
+    "react": "*",
+    "react-native": "*"
+  },
+  "devDependencies": {
+    "@expo/config-plugins": "^9.0.0",
+    "expo": "^52.0.0",
+    "expo-module-scripts": "^4.1.10",
+    "expo-modules-core": "^2.0.0"
+  },
+  "dependencies": {
+    "@expo/config-plugins": "^9.0.0"
+  }
+}

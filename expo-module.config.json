@@ -1,0 +1,9 @@
+{
+  "platforms": ["android", "ios"],
+  "android": {
+    "modules": ["expo.modules.flic2.ExpoFlic2Module"]
+  },
+  "ios": {
+    "modules": ["ExpoFlic2Module"]
+  }
+}
