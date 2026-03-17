@@ -8,6 +8,7 @@ import io.flic.flic2libandroid.Flic2Button
 import io.flic.flic2libandroid.Flic2ButtonListener
 import io.flic.flic2libandroid.Flic2Manager
 import io.flic.flic2libandroid.Flic2ScanCallback
+import io.flic.flic2libandroid.BatteryLevel
 
 class ExpoFlic2Module : Module() {
 
@@ -29,11 +30,12 @@ class ExpoFlic2Module : Module() {
     )
 
     Function("initialize") {
-      val context = appContext.reactContext ?: return@Function
+      val context = appContext.reactContext ?: return@Function null
       manager = Flic2Manager.initAndGetInstance(context, Handler(Looper.getMainLooper()))
       manager?.getButtons()?.forEach { button ->
         button.addListener(createButtonListener())
       }
+      null
     }
 
     Function("startScan") {
@@ -45,10 +47,9 @@ class ExpoFlic2Module : Module() {
           ))
         }
 
-        override fun onDiscovered(button: Flic2Button) {
+        override fun onDiscovered(bdAddr: String) {
           sendEvent("onFlic2Scan", mapOf(
-            "isScanning" to true,
-            "button" to button.toRecord(triggerModes[button.uuid] ?: "clickAndDoubleClickAndHold")
+            "isScanning" to true
           ))
         }
 
@@ -160,43 +161,43 @@ class ExpoFlic2Module : Module() {
         ))
       }
 
-      override fun onButtonConnect(button: Flic2Button) {
+      override fun onConnect(button: Flic2Button) {
         sendEvent("onFlic2Connection", mapOf(
           "uuid" to button.uuid,
           "state" to "connected"
         ))
       }
 
-      override fun onButtonReady(button: Flic2Button, timestamp: Long) {
+      override fun onReady(button: Flic2Button, timestamp: Long) {
         sendEvent("onFlic2Connection", mapOf(
           "uuid" to button.uuid,
           "state" to "ready"
         ))
       }
 
-      override fun onButtonDisconnect(button: Flic2Button) {
+      override fun onDisconnect(button: Flic2Button) {
         sendEvent("onFlic2Connection", mapOf(
           "uuid" to button.uuid,
           "state" to "disconnected"
         ))
       }
 
-      override fun onButtonConnectionFailed(
+      override fun onFailure(
         button: Flic2Button,
-        failReason: Int,
+        errorCode: Int,
         subCode: Int
       ) {
         sendEvent("onFlic2Connection", mapOf(
           "uuid" to button.uuid,
           "state" to "disconnected",
-          "error" to "Connection failed: reason=$failReason subCode=$subCode"
+          "error" to "Connection failed: reason=$errorCode subCode=$subCode"
         ))
       }
 
-      override fun onBatteryLevelUpdated(button: Flic2Button, level: Int) {
+      override fun onBatteryLevelUpdated(button: Flic2Button, level: BatteryLevel) {
         sendEvent("onFlic2Battery", mapOf(
           "uuid" to button.uuid,
-          "level" to level
+          "level" to level.estimatedPercentage
         ))
       }
     }

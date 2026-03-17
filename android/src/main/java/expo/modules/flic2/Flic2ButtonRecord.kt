@@ -11,12 +11,12 @@ fun Flic2Button.toRecord(triggerMode: String = "clickAndDoubleClickAndHold"): Ma
     "connectionState" to when (connectionState) {
       Flic2Button.CONNECTION_STATE_DISCONNECTED -> "disconnected"
       Flic2Button.CONNECTION_STATE_CONNECTING -> "connecting"
-      Flic2Button.CONNECTION_STATE_CONNECTED -> "connected"
+      Flic2Button.CONNECTION_STATE_CONNECTED_STARTING -> "connected"
       Flic2Button.CONNECTION_STATE_CONNECTED_READY -> "ready"
       else -> "disconnected"
     },
     "firmwareVersion" to firmwareVersion,
-    "batteryLevel" to lastKnownBatteryLevel,
+    "batteryLevel" to (lastKnownBatteryLevel?.estimatedPercentage ?: -1),
     "pressCount" to pressCount,
     "triggerMode" to triggerMode,
     "isReady" to (connectionState == Flic2Button.CONNECTION_STATE_CONNECTED_READY)

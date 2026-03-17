@@ -1,62 +1,16 @@
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
-apply plugin: 'maven-publish'
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
 
 group = 'expo.modules.flic2'
 version = '0.1.0'
 
-buildscript {
-  def expoModulesCorePlugin = new File(project(":expo-modules-core").projectDir.absolutePath, "ExpoModulesCorePlugin.gradle")
-  if (expoModulesCorePlugin.exists()) {
-    apply from: expoModulesCorePlugin
-    applyKotlinExpoModulesCorePlugin()
-  }
-
-  def resolvedKotlinVersion = getKotlinVersion()
-  def resolvedCompileSdkVersion = rootProject.ext.has("compileSdkVersion") ? rootProject.ext.get("compileSdkVersion") : 35
-  def resolvedMinSdkVersion = rootProject.ext.has("minSdkVersion") ? rootProject.ext.get("minSdkVersion") : 24
-
-  repositories {
-    mavenCentral()
-  }
-  dependencies {
-    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$resolvedKotlinVersion")
-  }
-}
-
-afterEvaluate {
-  publishing {
-    publications {
-      release(MavenPublication) {
-        from components.release
-      }
-    }
-    repositories {
-      maven {
-        url = mavenLocal().url
-      }
-    }
-  }
-}
-
 android {
   namespace "expo.modules.flic2"
 
-  compileSdkVersion rootProject.ext.has("compileSdkVersion") ? rootProject.ext.get("compileSdkVersion") : 35
-
   defaultConfig {
-    minSdkVersion rootProject.ext.has("minSdkVersion") ? rootProject.ext.get("minSdkVersion") : 24
-    targetSdkVersion rootProject.ext.has("targetSdkVersion") ? rootProject.ext.get("targetSdkVersion") : 35
-  }
-
-  publishing {
-    singleVariant("release") {
-      withSourcesJar()
-    }
-  }
-
-  lintOptions {
-    abortOnError false
+    minSdkVersion 24
   }
 
   compileOptions {
@@ -75,7 +29,5 @@ repositories {
 }
 
 dependencies {
-  implementation project(':expo-modules-core')
-  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${getKotlinVersion()}"
   implementation 'com.github.50ButtonsEach:flic2lib-android:2.+'
 }
