@@ -17,6 +17,9 @@ class ExpoFlic2Module : Module() {
   private var manager: Flic2Manager? = null
   private val triggerModes = ConcurrentHashMap<String, String>()
   private val buttonListeners = mutableMapOf<String, Flic2ButtonListener>()
+  // Correlation between button clock and Android clock, established at onReady.
+  // Maps uuid -> Pair(androidReadyElapsedMs, buttonReadyTimestampMs)
+  private val readyCorrelations = ConcurrentHashMap<String, Pair<Long, Long>>()
 
   override fun definition() = ModuleDefinition {
     Name("ExpoFlic2")
@@ -38,6 +41,7 @@ class ExpoFlic2Module : Module() {
       }
       buttonListeners.clear()
       triggerModes.clear()
+      readyCorrelations.clear()
     }
 
     Function("initialize") {
@@ -115,6 +119,11 @@ class ExpoFlic2Module : Module() {
     }
   }
 
+  private fun ageMs(uuid: String, eventTimestamp: Long): Long {
+    val (androidReadyMs, buttonReadyMs) = readyCorrelations[uuid] ?: return 0L
+    return AgeCalculator.computeAgeMs(SystemClock.elapsedRealtime(), androidReadyMs, buttonReadyMs, eventTimestamp)
+  }
+
   private fun findButton(uuid: String): Flic2Button? {
     return manager?.getButtons()?.find { it.uuid == uuid }
   }
@@ -138,12 +147,12 @@ class ExpoFlic2Module : Module() {
       ) {
         val mode = triggerModes[button.uuid] ?: "clickAndDoubleClickAndHold"
         if (mode != "click" && mode != "clickAndHold") return
-        val ageSeconds = (SystemClock.elapsedRealtime() - timestamp) / 1000
+        val age = ageMs(button.uuid, timestamp)
         if (isClick) {
-          sendEvent("onFlic2Click", mapOf("uuid" to button.uuid, "queued" to wasQueued, "age" to ageSeconds))
+          sendEvent("onFlic2Click", mapOf("uuid" to button.uuid, "queued" to wasQueued, "age" to age))
         }
         if (isHold && mode == "clickAndHold") {
-          sendEvent("onFlic2Hold", mapOf("uuid" to button.uuid, "queued" to wasQueued, "age" to ageSeconds))
+          sendEvent("onFlic2Hold", mapOf("uuid" to button.uuid, "queued" to wasQueued, "age" to age))
         }
       }
 
@@ -158,7 +167,7 @@ class ExpoFlic2Module : Module() {
       ) {
         val mode = triggerModes[button.uuid] ?: "clickAndDoubleClickAndHold"
         if (mode == "click" || mode == "clickAndHold") return
-        val ageSeconds = (SystemClock.elapsedRealtime() - timestamp) / 1000
+        val age = ageMs(button.uuid, timestamp)
         val emitClick = isSingleClick && mode != "clickAndDoubleClick"
         val emitDoubleClick = isDoubleClick
         val emitHold = isHold && mode != "clickAndDoubleClick"
@@ -166,21 +175,21 @@ class ExpoFlic2Module : Module() {
           sendEvent("onFlic2Click", mapOf(
             "uuid" to button.uuid,
             "queued" to wasQueued,
-            "age" to ageSeconds
+            "age" to age
           ))
         }
         if (emitDoubleClick) {
           sendEvent("onFlic2DoubleClick", mapOf(
             "uuid" to button.uuid,
             "queued" to wasQueued,
-            "age" to ageSeconds
+            "age" to age
           ))
         }
         if (emitHold) {
           sendEvent("onFlic2Hold", mapOf(
             "uuid" to button.uuid,
             "queued" to wasQueued,
-            "age" to ageSeconds
+            "age" to age
           ))
         }
       }
@@ -197,7 +206,7 @@ class ExpoFlic2Module : Module() {
           "uuid" to button.uuid,
           "isDown" to isDown,
           "queued" to wasQueued,
-          "age" to ((SystemClock.elapsedRealtime() - timestamp) / 1000)
+          "age" to ageMs(button.uuid, timestamp)
         ))
       }
 
@@ -209,6 +218,7 @@ class ExpoFlic2Module : Module() {
       }
 
       override fun onReady(button: Flic2Button, timestamp: Long) {
+        readyCorrelations[button.uuid] = Pair(SystemClock.elapsedRealtime(), timestamp)
         sendEvent("onFlic2Connection", mapOf(
           "uuid" to button.uuid,
           "state" to "ready"

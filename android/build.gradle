@@ -32,4 +32,5 @@ repositories {
 
 dependencies {
   implementation 'com.github.50ButtonsEach:flic2lib-android:2.0.1'
+  testImplementation 'junit:junit:4.13.2'
 }
