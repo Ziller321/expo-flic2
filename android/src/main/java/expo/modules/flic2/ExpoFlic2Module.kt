@@ -2,6 +2,7 @@ package expo.modules.flic2
 
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import io.flic.flic2libandroid.Flic2Button
@@ -137,7 +138,7 @@ class ExpoFlic2Module : Module() {
       ) {
         val mode = triggerModes[button.uuid] ?: "clickAndDoubleClickAndHold"
         if (mode != "click" && mode != "clickAndHold") return
-        val ageSeconds = (System.currentTimeMillis() - timestamp) / 1000
+        val ageSeconds = (SystemClock.elapsedRealtime() - timestamp) / 1000
         if (isClick) {
           sendEvent("onFlic2Click", mapOf("uuid" to button.uuid, "queued" to wasQueued, "age" to ageSeconds))
         }
@@ -157,7 +158,7 @@ class ExpoFlic2Module : Module() {
       ) {
         val mode = triggerModes[button.uuid] ?: "clickAndDoubleClickAndHold"
         if (mode == "click" || mode == "clickAndHold") return
-        val ageSeconds = (System.currentTimeMillis() - timestamp) / 1000
+        val ageSeconds = (SystemClock.elapsedRealtime() - timestamp) / 1000
         val emitClick = isSingleClick && mode != "clickAndDoubleClick"
         val emitDoubleClick = isDoubleClick
         val emitHold = isHold && mode != "clickAndDoubleClick"
@@ -196,7 +197,7 @@ class ExpoFlic2Module : Module() {
           "uuid" to button.uuid,
           "isDown" to isDown,
           "queued" to wasQueued,
-          "age" to ((System.currentTimeMillis() - timestamp) / 1000)
+          "age" to ((SystemClock.elapsedRealtime() - timestamp) / 1000)
         ))
       }
 
