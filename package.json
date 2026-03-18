@@ -1,6 +1,6 @@
 {
   "name": "expo-flic2",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Expo module for Flic2 Bluetooth buttons",
   "main": "build/index.js",
   "types": "build/index.d.ts",
