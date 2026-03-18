@@ -9,11 +9,13 @@ import io.flic.flic2libandroid.Flic2ButtonListener
 import io.flic.flic2libandroid.Flic2Manager
 import io.flic.flic2libandroid.Flic2ScanCallback
 import io.flic.flic2libandroid.BatteryLevel
+import java.util.concurrent.ConcurrentHashMap
 
 class ExpoFlic2Module : Module() {
 
   private var manager: Flic2Manager? = null
-  private val triggerModes = mutableMapOf<String, String>()
+  private val triggerModes = ConcurrentHashMap<String, String>()
+  private val buttonListeners = mutableMapOf<String, Flic2ButtonListener>()
 
   override fun definition() = ModuleDefinition {
     Name("ExpoFlic2")
@@ -29,11 +31,19 @@ class ExpoFlic2Module : Module() {
       "onFlic2ManagerState"
     )
 
+    OnDestroy {
+      manager?.getButtons()?.forEach { button ->
+        buttonListeners[button.uuid]?.let { button.removeListener(it) }
+      }
+      buttonListeners.clear()
+      triggerModes.clear()
+    }
+
     Function("initialize") {
       val context = appContext.reactContext ?: return@Function null
       manager = Flic2Manager.initAndGetInstance(context, Handler(Looper.getMainLooper()))
       manager?.getButtons()?.forEach { button ->
-        button.addListener(createButtonListener())
+        attachListener(button)
       }
       null
     }
@@ -59,7 +69,7 @@ class ExpoFlic2Module : Module() {
 
         override fun onComplete(result: Int, subCode: Int, button: Flic2Button?) {
           if (button != null) {
-            button.addListener(createButtonListener())
+            attachListener(button)
             sendEvent("onFlic2Scan", mapOf(
               "isScanning" to false,
               "button" to button.toRecord(triggerModes[button.uuid] ?: "clickAndDoubleClickAndHold")
@@ -93,6 +103,8 @@ class ExpoFlic2Module : Module() {
     Function("forgetButton") { uuid: String ->
       val button = findButton(uuid)
       if (button != null) {
+        buttonListeners.remove(uuid)?.let { button.removeListener(it) }
+        triggerModes.remove(uuid)
         manager?.forgetButton(button)
       }
     }
@@ -106,8 +118,34 @@ class ExpoFlic2Module : Module() {
     return manager?.getButtons()?.find { it.uuid == uuid }
   }
 
+  private fun attachListener(button: Flic2Button) {
+    buttonListeners[button.uuid]?.let { button.removeListener(it) }
+    val listener = createButtonListener()
+    buttonListeners[button.uuid] = listener
+    button.addListener(listener)
+  }
+
   private fun createButtonListener(): Flic2ButtonListener {
     return object : Flic2ButtonListener() {
+      override fun onButtonClickOrHold(
+        button: Flic2Button,
+        wasQueued: Boolean,
+        lastQueued: Boolean,
+        timestamp: Long,
+        isClick: Boolean,
+        isHold: Boolean
+      ) {
+        val mode = triggerModes[button.uuid] ?: "clickAndDoubleClickAndHold"
+        if (mode != "click" && mode != "clickAndHold") return
+        val ageSeconds = (System.currentTimeMillis() - timestamp) / 1000
+        if (isClick) {
+          sendEvent("onFlic2Click", mapOf("uuid" to button.uuid, "queued" to wasQueued, "age" to ageSeconds))
+        }
+        if (isHold && mode == "clickAndHold") {
+          sendEvent("onFlic2Hold", mapOf("uuid" to button.uuid, "queued" to wasQueued, "age" to ageSeconds))
+        }
+      }
+
       override fun onButtonSingleOrDoubleClickOrHold(
         button: Flic2Button,
         wasQueued: Boolean,
@@ -117,11 +155,12 @@ class ExpoFlic2Module : Module() {
         isDoubleClick: Boolean,
         isHold: Boolean
       ) {
-        val ageSeconds = (System.currentTimeMillis() - timestamp) / 1000
         val mode = triggerModes[button.uuid] ?: "clickAndDoubleClickAndHold"
+        if (mode == "click" || mode == "clickAndHold") return
+        val ageSeconds = (System.currentTimeMillis() - timestamp) / 1000
         val emitClick = isSingleClick && mode != "clickAndDoubleClick"
-        val emitDoubleClick = isDoubleClick && mode != "click" && mode != "clickAndHold"
-        val emitHold = isHold && mode != "click" && mode != "clickAndDoubleClick"
+        val emitDoubleClick = isDoubleClick
+        val emitHold = isHold && mode != "clickAndDoubleClick"
         if (emitClick) {
           sendEvent("onFlic2Click", mapOf(
             "uuid" to button.uuid,

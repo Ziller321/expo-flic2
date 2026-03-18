@@ -3,6 +3,7 @@ export enum Flic2ConnectionState {
   Connecting = "connecting",
   Connected = "connected",
   Ready = "ready",
+  Unpaired = "unpaired",
 }
 
 export enum Flic2TriggerMode {

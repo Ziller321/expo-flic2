@@ -4,14 +4,14 @@ plugins {
 }
 
 group = 'expo.modules.flic2'
-version = '0.2.3'
+version = '0.3.0'
 
 android {
   namespace "expo.modules.flic2"
 
   defaultConfig {
     versionCode 1
-    versionName "0.2.3"
+    versionName "0.3.0"
     minSdkVersion 24
   }
 

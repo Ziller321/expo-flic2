@@ -106,6 +106,10 @@ export function addOnBatteryListener(
   return ExpoFlic2.addListener("onFlic2Battery", listener);
 }
 
+/**
+ * iOS only. The Android Flic2 SDK does not provide a Bluetooth manager state
+ * callback, so this listener will never fire on Android.
+ */
 export function addOnManagerStateListener(
   listener: (event: Flic2ManagerStateEvent) => void
 ): EventSubscription {

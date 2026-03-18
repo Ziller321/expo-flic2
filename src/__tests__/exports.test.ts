@@ -9,11 +9,12 @@ describe("Flic2ConnectionState enum", () => {
     expect(Flic2ConnectionState.Connecting).toBe("connecting");
     expect(Flic2ConnectionState.Connected).toBe("connected");
     expect(Flic2ConnectionState.Ready).toBe("ready");
+    expect(Flic2ConnectionState.Unpaired).toBe("unpaired");
   });
 
-  it("has exactly 4 values", () => {
+  it("has exactly 5 values", () => {
     const values = Object.values(Flic2ConnectionState);
-    expect(values).toHaveLength(4);
+    expect(values).toHaveLength(5);
   });
 });
 
@@ -42,6 +43,7 @@ describe("public API exports", () => {
       "connecting",
       "connected",
       "ready",
+      "unpaired", // iOS only: emitted when a button is factory-reset or loses pairing
     ];
     const enumValues = Object.values(Flic2ConnectionState);
     expect(enumValues).toEqual(nativeStrings);

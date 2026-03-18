@@ -64,6 +64,17 @@ class Flic2ManagerBridge: NSObject, FLICManagerDelegate, FLICButtonDelegate {
         module?.sendEvent("onFlic2Connection", payload)
     }
 
+    func button(_ button: FLICButton, didUnpairWithError error: Error?) {
+        var payload: [String: Any] = [
+            "uuid": button.identifier.uuidString,
+            "state": "unpaired"
+        ]
+        if let error = error {
+            payload["error"] = error.localizedDescription
+        }
+        module?.sendEvent("onFlic2Connection", payload)
+    }
+
     // MARK: - FLICButtonDelegate (click events via legacy delegate methods)
 
     func button(_ button: FLICButton, didReceiveButtonDown queued: Bool, age: Int) {

@@ -80,7 +80,15 @@ public class ExpoFlic2Module: Module {
         Function("forgetButton") { (uuid: String) in
             guard let manager = FLICManager.shared(),
                   let button = findButton(uuid) else { return }
-            manager.forgetButton(button) { _, _ in }
+            manager.forgetButton(button) { [weak self] _, error in
+                if let error = error {
+                    self?.sendEvent("onFlic2Connection", [
+                        "uuid": uuid,
+                        "state": "disconnected",
+                        "error": error.localizedDescription
+                    ])
+                }
+            }
         }
 
         Function("setButtonTriggerMode") { (uuid: String, mode: String) in
