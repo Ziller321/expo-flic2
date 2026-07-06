@@ -97,6 +97,36 @@ describe("withFlic2 config plugin", () => {
     expect(permNames).toContain("android.permission.ACCESS_FINE_LOCATION");
   });
 
+  it("scopes legacy and location permissions to Android 11 and below", () => {
+    const config = createMockConfig();
+    withFlic2(config);
+
+    const permissions = config.modResults.manifest["uses-permission"];
+    const byName = (name: string) =>
+      permissions.find((p: any) => p.$["android:name"] === name);
+
+    for (const legacy of [
+      "android.permission.BLUETOOTH",
+      "android.permission.BLUETOOTH_ADMIN",
+      "android.permission.ACCESS_FINE_LOCATION",
+    ]) {
+      expect(byName(legacy).$["android:maxSdkVersion"]).toBe("30");
+    }
+    expect(byName("android.permission.BLUETOOTH_CONNECT").$).toEqual({
+      "android:name": "android.permission.BLUETOOTH_CONNECT",
+    });
+  });
+
+  it("declares BLUETOOTH_SCAN with neverForLocation", () => {
+    const config = createMockConfig();
+    withFlic2(config);
+
+    const scanPerm = config.modResults.manifest["uses-permission"].find(
+      (p: any) => p.$["android:name"] === "android.permission.BLUETOOTH_SCAN",
+    );
+    expect(scanPerm.$["android:usesPermissionFlags"]).toBe("neverForLocation");
+  });
+
   it("does not duplicate Android permissions if already present", () => {
     const config = createMockConfig();
     config.modResults.manifest["uses-permission"] = [

@@ -77,12 +77,15 @@ class Flic2ManagerBridge: NSObject, FLICManagerDelegate, FLICButtonDelegate {
 
     // MARK: - FLICButtonDelegate (click events via legacy delegate methods)
 
+    // The iOS SDK reports `age` in whole seconds; the JS API contract (matching
+    // Android) is milliseconds, so convert before emitting.
+
     func button(_ button: FLICButton, didReceiveButtonDown queued: Bool, age: Int) {
         module?.sendEvent("onFlic2UpOrDown", [
             "uuid": button.identifier.uuidString,
             "isDown": true,
             "queued": queued,
-            "age": age
+            "age": age * 1000
         ])
     }
 
@@ -91,7 +94,7 @@ class Flic2ManagerBridge: NSObject, FLICManagerDelegate, FLICButtonDelegate {
             "uuid": button.identifier.uuidString,
             "isDown": false,
             "queued": queued,
-            "age": age
+            "age": age * 1000
         ])
     }
 
@@ -99,7 +102,7 @@ class Flic2ManagerBridge: NSObject, FLICManagerDelegate, FLICButtonDelegate {
         module?.sendEvent("onFlic2Click", [
             "uuid": button.identifier.uuidString,
             "queued": queued,
-            "age": age
+            "age": age * 1000
         ])
     }
 
@@ -107,7 +110,7 @@ class Flic2ManagerBridge: NSObject, FLICManagerDelegate, FLICButtonDelegate {
         module?.sendEvent("onFlic2DoubleClick", [
             "uuid": button.identifier.uuidString,
             "queued": queued,
-            "age": age
+            "age": age * 1000
         ])
     }
 
@@ -115,7 +118,7 @@ class Flic2ManagerBridge: NSObject, FLICManagerDelegate, FLICButtonDelegate {
         module?.sendEvent("onFlic2Hold", [
             "uuid": button.identifier.uuidString,
             "queued": queued,
-            "age": age
+            "age": age * 1000
         ])
     }
 

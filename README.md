@@ -38,14 +38,53 @@ For bare React Native projects, add to `ios/MyApp/Info.plist`:
 The module requires the following permissions in `AndroidManifest.xml`:
 
 ```xml
-<uses-permission android:name="android.permission.BLUETOOTH" />
-<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-<uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+<!-- Android 12+ (API 31) -->
+<uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+                 android:usesPermissionFlags="neverForLocation" />
 <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+<!-- Android 11 and below only -->
+<uses-permission android:name="android.permission.BLUETOOTH"
+                 android:maxSdkVersion="30" />
+<uses-permission android:name="android.permission.BLUETOOTH_ADMIN"
+                 android:maxSdkVersion="30" />
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"
+                 android:maxSdkVersion="30" />
 ```
 
-The config plugin adds these automatically for managed Expo projects.
+The config plugin adds these automatically for managed Expo projects. Location
+is only required for Bluetooth scanning on Android 11 and below; on Android 12+
+the `neverForLocation` flag makes location permission unnecessary.
+
+#### Runtime permissions
+
+Declaring the permissions in the manifest is not enough — the user must grant
+them at runtime **before** you call `startScan()`:
+
+- **Android 12+**: request `BLUETOOTH_SCAN` and `BLUETOOTH_CONNECT`
+- **Android 11 and below**: request `ACCESS_FINE_LOCATION`
+
+If the permissions are missing, `startScan()` emits an `onFlic2Scan` event with
+an `error` instead of scanning. Example using React Native's `PermissionsAndroid`:
+
+```typescript
+import { PermissionsAndroid, Platform } from "react-native";
+
+async function requestFlic2Permissions(): Promise<boolean> {
+  if (Platform.OS !== "android") return true;
+  if (Platform.Version >= 31) {
+    const result = await PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+    ]);
+    return Object.values(result).every((r) => r === "granted");
+  }
+  const result = await PermissionsAndroid.request(
+    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+  );
+  return result === "granted";
+}
+```
 
 ## Quick Start
 
@@ -117,6 +156,11 @@ import { initialize } from "expo-flic2";
 initialize();
 ```
 
+> **Note (iOS):** the native Flic2 manager is configured when `initialize()`
+> runs, so button events (including iOS Bluetooth state restoration) are only
+> delivered after your JS bundle has started and called `initialize()`. Call it
+> as early as possible.
+
 ### Scanning
 
 #### `startScan()`
@@ -171,7 +215,9 @@ Disconnect from a button without removing it from the known list.
 
 #### `forgetButton(uuid: string)`
 
-Disconnect and remove a button from the known list.
+Disconnect and remove a button from the known list. Emits an `onFlic2Connection`
+event with `state: "unpaired"` when the button has been removed. The same event
+also fires if the button unpairs itself (e.g. after a factory reset).
 
 ```typescript
 import { connectButton, disconnectButton, forgetButton } from "expo-flic2";
@@ -201,6 +247,9 @@ setButtonTriggerMode(uuid, Flic2TriggerMode.ClickAndHold);
 setButtonTriggerMode(uuid, Flic2TriggerMode.ClickAndDoubleClickAndHold);
 ```
 
+The trigger mode persists across app restarts on both platforms (on iOS it is
+stored on the button itself; on Android it is stored in app preferences).
+
 ### Event Listeners
 
 All listeners return an `EventSubscription` — call `.remove()` to unsubscribe.
@@ -212,7 +261,8 @@ Fires when a button is single-clicked.
 ```typescript
 const sub = addOnClickListener(({ uuid, queued, age }) => {
   // queued: true if the event was stored locally while disconnected
-  // age: how many ms ago the event occurred
+  // age: how many ms ago the event occurred (iOS reports it with 1-second
+  //      granularity, so it is only meaningful for queued events)
   console.log(`Clicked: ${uuid}`);
 });
 ```
@@ -321,6 +371,7 @@ enum Flic2ConnectionState {
   Connecting = "connecting",
   Connected = "connected",
   Ready = "ready",
+  Unpaired = "unpaired",
 }
 
 enum Flic2TriggerMode {

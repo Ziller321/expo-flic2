@@ -28,7 +28,13 @@ public class ExpoFlic2Module: Module {
         }
 
         Function("startScan") {
-            guard let manager = FLICManager.shared() else { return }
+            guard let manager = FLICManager.shared() else {
+                self.sendEvent("onFlic2Scan", [
+                    "isScanning": false,
+                    "error": "Flic2 manager is not initialized. Call initialize() first."
+                ])
+                return
+            }
             manager.scanForButtons(stateChangeHandler: { [weak self] event in
                 let eventName: String
                 switch event {
@@ -86,6 +92,11 @@ public class ExpoFlic2Module: Module {
                         "uuid": uuid,
                         "state": "disconnected",
                         "error": error.localizedDescription
+                    ])
+                } else {
+                    self?.sendEvent("onFlic2Connection", [
+                        "uuid": uuid,
+                        "state": "unpaired"
                     ])
                 }
             }

@@ -5,3 +5,12 @@ node_modules/
 
 # Claude Code settings
 .claude/
+CLAUDE.md
+
+# Native build intermediates (root build/ must stay published — JS entry point)
+android/build/
+
+# Dev-only files
+src/__tests__/
+jest.config.js
+eslint.config.js

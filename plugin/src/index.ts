@@ -41,22 +41,45 @@ const withFlic2: ConfigPlugin<Flic2PluginProps | void> = (config, props) => {
       manifest["uses-permission"] = [];
     }
 
+    // Legacy Bluetooth and location permissions are only needed on Android 11
+    // and below. On Android 12+ (API 31), BLUETOOTH_SCAN with neverForLocation
+    // plus BLUETOOTH_CONNECT is sufficient and avoids requesting location.
     const permissions = [
-      "android.permission.BLUETOOTH",
-      "android.permission.BLUETOOTH_ADMIN",
-      "android.permission.BLUETOOTH_SCAN",
-      "android.permission.BLUETOOTH_CONNECT",
-      "android.permission.ACCESS_FINE_LOCATION",
+      {
+        $: {
+          "android:name": "android.permission.BLUETOOTH",
+          "android:maxSdkVersion": "30",
+        },
+      },
+      {
+        $: {
+          "android:name": "android.permission.BLUETOOTH_ADMIN",
+          "android:maxSdkVersion": "30",
+        },
+      },
+      {
+        $: {
+          "android:name": "android.permission.BLUETOOTH_SCAN",
+          "android:usesPermissionFlags": "neverForLocation",
+        },
+      },
+      {
+        $: { "android:name": "android.permission.BLUETOOTH_CONNECT" },
+      },
+      {
+        $: {
+          "android:name": "android.permission.ACCESS_FINE_LOCATION",
+          "android:maxSdkVersion": "30",
+        },
+      },
     ];
 
     for (const permission of permissions) {
       const exists = manifest["uses-permission"].some(
-        (p) => p.$?.["android:name"] === permission,
+        (p) => p.$?.["android:name"] === permission.$["android:name"],
       );
       if (!exists) {
-        manifest["uses-permission"].push({
-          $: { "android:name": permission },
-        });
+        manifest["uses-permission"].push(permission);
       }
     }
 
