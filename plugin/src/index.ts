@@ -2,7 +2,7 @@ import {
   type ConfigPlugin,
   withInfoPlist,
   withAndroidManifest,
-} from "@expo/config-plugins";
+} from "expo/config-plugins";
 
 type Flic2PluginProps = {
   bluetoothAlwaysPermission?: string;
@@ -51,7 +51,7 @@ const withFlic2: ConfigPlugin<Flic2PluginProps | void> = (config, props) => {
 
     for (const permission of permissions) {
       const exists = manifest["uses-permission"].some(
-        (p) => p.$?.["android:name"] === permission
+        (p) => p.$?.["android:name"] === permission,
       );
       if (!exists) {
         manifest["uses-permission"].push({

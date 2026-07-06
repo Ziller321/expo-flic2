@@ -1,9 +1,10 @@
-import { withInfoPlist, withAndroidManifest } from "@expo/config-plugins";
+import { withInfoPlist, withAndroidManifest } from "expo/config-plugins";
+
 import withFlic2 from "../../plugin/src/index";
 
 // Mock config-plugins
-jest.mock("@expo/config-plugins", () => {
-  const original = jest.requireActual("@expo/config-plugins");
+jest.mock("expo/config-plugins", () => {
+  const original = jest.requireActual("expo/config-plugins");
   return {
     ...original,
     withInfoPlist: jest.fn((config, callback) => {
@@ -24,7 +25,7 @@ function createMockConfig() {
     modResults: {
       UIBackgroundModes: [] as string[],
       manifest: {
-        "uses-permission": [] as Array<{ $: { "android:name": string } }>,
+        "uses-permission": [] as { $: { "android:name": string } }[],
       },
     },
   } as any;
@@ -41,10 +42,10 @@ describe("withFlic2 config plugin", () => {
 
     expect(withInfoPlist).toHaveBeenCalled();
     expect(config.modResults.NSBluetoothAlwaysUsageDescription).toBe(
-      "This app uses Bluetooth to communicate with Flic buttons"
+      "This app uses Bluetooth to communicate with Flic buttons",
     );
     expect(config.modResults.NSBluetoothPeripheralUsageDescription).toBe(
-      "This app uses Bluetooth to communicate with Flic buttons"
+      "This app uses Bluetooth to communicate with Flic buttons",
     );
   });
 
@@ -56,10 +57,10 @@ describe("withFlic2 config plugin", () => {
     });
 
     expect(config.modResults.NSBluetoothAlwaysUsageDescription).toBe(
-      "Custom always"
+      "Custom always",
     );
     expect(config.modResults.NSBluetoothPeripheralUsageDescription).toBe(
-      "Custom peripheral"
+      "Custom peripheral",
     );
   });
 
@@ -76,7 +77,9 @@ describe("withFlic2 config plugin", () => {
     withFlic2(config);
 
     const bgModes = config.modResults.UIBackgroundModes as string[];
-    expect(bgModes.filter((m: string) => m === "bluetooth-central")).toHaveLength(1);
+    expect(
+      bgModes.filter((m: string) => m === "bluetooth-central"),
+    ).toHaveLength(1);
   });
 
   it("adds all required Android permissions", () => {
@@ -85,7 +88,7 @@ describe("withFlic2 config plugin", () => {
 
     expect(withAndroidManifest).toHaveBeenCalled();
     const permNames = config.modResults.manifest["uses-permission"].map(
-      (p: any) => p.$["android:name"]
+      (p: any) => p.$["android:name"],
     );
     expect(permNames).toContain("android.permission.BLUETOOTH");
     expect(permNames).toContain("android.permission.BLUETOOTH_ADMIN");
@@ -102,7 +105,7 @@ describe("withFlic2 config plugin", () => {
     withFlic2(config);
 
     const btPerms = config.modResults.manifest["uses-permission"].filter(
-      (p: any) => p.$["android:name"] === "android.permission.BLUETOOTH"
+      (p: any) => p.$["android:name"] === "android.permission.BLUETOOTH",
     );
     expect(btPerms).toHaveLength(1);
   });

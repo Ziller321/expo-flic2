@@ -1,7 +1,4 @@
-import {
-  Flic2ConnectionState,
-  Flic2TriggerMode,
-} from "../ExpoFlic2.types";
+import { Flic2ConnectionState, Flic2TriggerMode } from "../ExpoFlic2.types";
 
 describe("Flic2ConnectionState enum", () => {
   it("has all expected values", () => {
@@ -24,7 +21,7 @@ describe("Flic2TriggerMode enum", () => {
     expect(Flic2TriggerMode.ClickAndHold).toBe("clickAndHold");
     expect(Flic2TriggerMode.ClickAndDoubleClick).toBe("clickAndDoubleClick");
     expect(Flic2TriggerMode.ClickAndDoubleClickAndHold).toBe(
-      "clickAndDoubleClickAndHold"
+      "clickAndDoubleClickAndHold",
     );
   });
 

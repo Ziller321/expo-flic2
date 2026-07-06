@@ -6,11 +6,11 @@ module.exports = {
       "ts-jest",
       {
         tsconfig: {
-          module: "commonjs",
+          module: "node18",
+          moduleResolution: "node16",
           esModuleInterop: true,
           target: "es2020",
           strict: true,
-          moduleResolution: "node",
         },
       },
     ],

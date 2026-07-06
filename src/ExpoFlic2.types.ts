@@ -71,5 +71,11 @@ export type Flic2BatteryEvent = {
 };
 
 export type Flic2ManagerStateEvent = {
-  state: "poweredOn" | "poweredOff" | "resetting" | "unsupported" | "unauthorized" | "unknown";
+  state:
+    | "poweredOn"
+    | "poweredOff"
+    | "resetting"
+    | "unsupported"
+    | "unauthorized"
+    | "unknown";
 };

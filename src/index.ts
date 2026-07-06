@@ -1,5 +1,5 @@
-import { EventSubscription } from "expo-modules-core";
-import ExpoFlic2 from "./ExpoFlic2Module";
+import type { EventSubscription } from "expo-modules-core";
+
 import {
   Flic2TriggerMode,
   type Flic2Button,
@@ -12,6 +12,7 @@ import {
   type Flic2BatteryEvent,
   type Flic2ManagerStateEvent,
 } from "./ExpoFlic2.types";
+import ExpoFlic2 from "./ExpoFlic2Module";
 
 export {
   Flic2ConnectionState,
@@ -57,7 +58,7 @@ export function forgetButton(uuid: string): void {
 
 export function setButtonTriggerMode(
   uuid: string,
-  mode: Flic2TriggerMode
+  mode: Flic2TriggerMode,
 ): void {
   ExpoFlic2.setButtonTriggerMode(uuid, mode);
 }
@@ -65,43 +66,43 @@ export function setButtonTriggerMode(
 // Typed event listeners
 
 export function addOnClickListener(
-  listener: (event: Flic2ClickEvent) => void
+  listener: (event: Flic2ClickEvent) => void,
 ): EventSubscription {
   return ExpoFlic2.addListener("onFlic2Click", listener);
 }
 
 export function addOnDoubleClickListener(
-  listener: (event: Flic2DoubleClickEvent) => void
+  listener: (event: Flic2DoubleClickEvent) => void,
 ): EventSubscription {
   return ExpoFlic2.addListener("onFlic2DoubleClick", listener);
 }
 
 export function addOnHoldListener(
-  listener: (event: Flic2HoldEvent) => void
+  listener: (event: Flic2HoldEvent) => void,
 ): EventSubscription {
   return ExpoFlic2.addListener("onFlic2Hold", listener);
 }
 
 export function addOnUpOrDownListener(
-  listener: (event: Flic2UpOrDownEvent) => void
+  listener: (event: Flic2UpOrDownEvent) => void,
 ): EventSubscription {
   return ExpoFlic2.addListener("onFlic2UpOrDown", listener);
 }
 
 export function addOnConnectionListener(
-  listener: (event: Flic2ConnectionEvent) => void
+  listener: (event: Flic2ConnectionEvent) => void,
 ): EventSubscription {
   return ExpoFlic2.addListener("onFlic2Connection", listener);
 }
 
 export function addOnScanListener(
-  listener: (event: Flic2ScanEvent) => void
+  listener: (event: Flic2ScanEvent) => void,
 ): EventSubscription {
   return ExpoFlic2.addListener("onFlic2Scan", listener);
 }
 
 export function addOnBatteryListener(
-  listener: (event: Flic2BatteryEvent) => void
+  listener: (event: Flic2BatteryEvent) => void,
 ): EventSubscription {
   return ExpoFlic2.addListener("onFlic2Battery", listener);
 }
@@ -111,7 +112,7 @@ export function addOnBatteryListener(
  * callback, so this listener will never fire on Android.
  */
 export function addOnManagerStateListener(
-  listener: (event: Flic2ManagerStateEvent) => void
+  listener: (event: Flic2ManagerStateEvent) => void,
 ): EventSubscription {
   return ExpoFlic2.addListener("onFlic2ManagerState", listener);
 }
